@@ -1,0 +1,38 @@
+# frozen_string_literal: true
+
+require 'pathname'
+require 'rake/clean'
+require 'webvtt'
+
+rule '.clean.ko.vtt' => '.ko.vtt' do |t|
+  webvtt = WebVTT.read(t.source)
+
+  webvtt.cues.each do |cue|
+    cue.text.delete!('&lrm;')
+    cue.text.gsub!(/<[^>]+>/, '')
+    cue.text.gsub!(/\[[^\]]+\]/, '')
+    cue.text.strip!
+  end
+
+  webvtt.cues.reject! { |cue| cue.text.empty? || cue.text =~ /넷플릭스 시리즈/ }
+
+  webvtt.save(t.name)
+end
+CLEAN.include Rake::FileList.new('**/*.clean.ko.vtt')
+
+rule '.mp4' => '.ogg' do |t|
+  system(
+    'ffmpeg',
+    '-f', 'lavfi',
+    '-i', 'color=c=blue:s=1280x720',
+    '-i', t.source,
+    '-shortest',
+    '-fflags', '+shortest', t.name
+  )
+end
+CLEAN.include Rake::FileList.new('**/*.mp4')
+
+rule '.condensed.mp3' => ['.mp4', '.clean.ko.vtt'] do |t|
+  system('subs2cia', 'condense', '-i', *t.sources)
+end
+CLOBBER.include Rake::FileList.new('**/*.mp3')
