@@ -10,7 +10,11 @@ $ pip3 install subs2cia
 
 ## Usage
 
+To generate condensed audio from YouTube videos:
+
 ```console
+$ cd youtube
+
 # e.g. for the video https://www.youtube.com/watch?v=PN7rJrGo9a0
 # bundle exec rake PN7rJrGo9a0.condensed.mp3
 $ bundle exec rake YOUTUBE_VIDEO_ID.condensed.mp3
